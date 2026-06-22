@@ -1,0 +1,30 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: coppy-redis
+    restart: unless-stopped
+    volumes:
+      - coppy-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build: .
+    container_name: coppy-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - APP_URL=${APP_URL:-http://localhost:3000}
+      - COPPY_DEFAULT_TTL=${COPPY_DEFAULT_TTL:-3600}
+      - COPPY_MAX_TTL=${COPPY_MAX_TTL:-86400}
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  coppy-redis-data:

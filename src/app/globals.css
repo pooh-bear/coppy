@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+:root {
+  --coppy-primary: #6c5ce7;
+  --coppy-secondary: #a29bfe;
+  --coppy-bg: #0f0f1a;
+  --coppy-card: #1a1a2e;
+  --coppy-border: #2a2a4a;
+  --coppy-text: #e8e8f0;
+  --coppy-muted: #8888aa;
+  --coppy-accent: #fd79a8;
+}
+
+body {
+  background-color: var(--coppy-bg);
+  color: var(--coppy-text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
