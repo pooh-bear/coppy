@@ -8,7 +8,7 @@ COPY package.json ./
 COPY tsconfig.json ./
 COPY next.config.js ./
 COPY postcss.config.mjs ./
-COPY tailwind.config.ts ./
+COPY package-lock.json ./
 
 # Install dependencies
 RUN npm ci
