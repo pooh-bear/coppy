@@ -32,14 +32,14 @@ Edit `docker-compose.yml` to point `REDIS_URL` to your Redis and attach to its n
 docker compose up -d
 ```
 
-Open http://localhost:3000 — empty clipboard, ready for action.
+Open http://localhost:8712 — empty clipboard, ready for action.
 
 ## Usage
 
 ### Pushing a clip (via curl)
 
 ```bash
-curl -X POST http://localhost:3000/api/clips \
+curl -X POST http://localhost:8712/api/clips \
   -H "Content-Type: application/json" \
   -d '{"content":"Hello from Coppy!"}'
 ```
@@ -47,7 +47,7 @@ curl -X POST http://localhost:3000/api/clips \
 ### With a title and custom TTL
 
 ```bash
-curl -X POST http://localhost:3000/api/clips \
+curl -X POST http://localhost:8712/api/clips \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Email draft for client",
@@ -61,7 +61,7 @@ curl -X POST http://localhost:3000/api/clips \
 ```json
 {
   "id": "abc123def456",
-  "url": "http://localhost:3000/clip/abc123def456",
+  "url": "http://localhost:8712/clip/abc123def456",
   "expiresIn": 3600,
   "message": "Clip created successfully"
 }
@@ -149,7 +149,7 @@ Coppy is designed to run behind a reverse tunnel — no public ports, no exposed
 
 ```bash
 # Install cloudflared on your server
-# Create a tunnel pointing at localhost:3000
+# Create a tunnel pointing at localhost:8712
 cloudflared tunnel create coppy
 
 # Configure DNS
