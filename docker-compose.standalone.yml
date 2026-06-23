@@ -22,6 +22,7 @@ services:
       - APP_URL=${APP_URL:-http://localhost:3000}
       - COPPY_DEFAULT_TTL=${COPPY_DEFAULT_TTL:-3600}
       - COPPY_MAX_TTL=${COPPY_MAX_TTL:-86400}
+      - COPPY_API_TOKEN=${COPPY_API_TOKEN:-}
     depends_on:
       redis:
         condition: service_healthy

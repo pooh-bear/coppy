@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import { setClip, listClips } from '@/lib/redis';
+import { validateApiToken } from '@/lib/auth';
 
 const DEFAULT_TTL = parseInt(process.env.COPPY_DEFAULT_TTL || '3600', 10);
 const MAX_TTL = parseInt(process.env.COPPY_MAX_TTL || '86400', 10);
 
 export async function POST(request: NextRequest) {
+  // Check API token
+  const auth = validateApiToken(request);
+  if (!auth.valid) return auth.error;
+
   try {
     const body = await request.json();
     const { content, title, ttl } = body;

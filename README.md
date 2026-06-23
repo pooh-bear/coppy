@@ -100,6 +100,7 @@ Via environment variables:
 | `APP_URL` | `http://localhost:3000` | Public URL (used in API responses) |
 | `COPPY_DEFAULT_TTL` | `3600` | Default clip expiry in seconds (1h) |
 | `COPPY_MAX_TTL` | `86400` | Maximum allowed TTL in seconds (24h) |
+| `COPPY_API_TOKEN` | (empty) | API token for write operations. If set, POST/DELETE require `Authorization: Bearer <token>`. Leave empty for open-access dev mode. |
 
 ## Deployment
 
