@@ -200,8 +200,8 @@ tailscale serve --bg http://localhost:8712
 ## Architecture
 
 ```
-┌─────────────┐     POST/GET     ┌──────────┐     SET/GET     ┌───────┐
-│  Frisk/AI   │ ──────────────► │  Coppy   │ ──────────────► │ Redis │
+┌─────────────┐     POST/GET    ┌──────────┐     SET/GET     ┌───────┐
+│  AI Agent   │ ──────────────► │  Coppy   │ ──────────────► │ Redis │
 │  (curl/MCP) │                 │  (Next)  │                 │  (KV) │
 └─────────────┘                 └──────────┘                 └───────┘
                                        │
