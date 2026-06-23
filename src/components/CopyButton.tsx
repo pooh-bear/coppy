@@ -1,12 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { IconCopy, IconCheck } from './Icons';
 
 interface CopyButtonProps {
   content: string;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-export default function CopyButton({ content }: CopyButtonProps) {
+export default function CopyButton({ content, className, style }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -15,7 +18,7 @@ export default function CopyButton({ content }: CopyButtonProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // fallback for older browsers
+      // Fallback
       const textarea = document.createElement('textarea');
       textarea.value = content;
       document.body.appendChild(textarea);
@@ -29,14 +32,12 @@ export default function CopyButton({ content }: CopyButtonProps) {
 
   return (
     <button
-      onClick={handleCopy}
-      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-        copied
-          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-          : 'bg-coppy-primary/20 text-coppy-secondary border border-coppy-primary/30 hover:bg-coppy-primary/30 hover:border-coppy-primary/50'
-      }`}
+      onClick={(e) => { e.stopPropagation(); handleCopy(); }}
+      className={`item-copy-btn${copied ? ' copied' : ''}${className ? ' ' + className : ''}`}
+      style={style}
     >
-      {copied ? '✓ Copied!' : 'Copy'}
+      {copied ? <IconCheck /> : <IconCopy />}
+      {copied ? 'Copied!' : 'Copy'}
     </button>
   );
 }
