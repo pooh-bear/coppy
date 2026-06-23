@@ -15,9 +15,19 @@
 
 ## Quick Start
 
+### With bundled Redis (standalone)
+
+If you don't have a Redis instance handy, use the standalone compose file:
+
 ```bash
-# Clone and go
-cd coppy
+docker compose -f docker-compose.standalone.yml up -d
+```
+
+### Connecting to an existing Redis
+
+Edit `docker-compose.yml` to point `REDIS_URL` to your Redis and attach to its network.
+
+```bash
 docker compose up -d
 ```
 
