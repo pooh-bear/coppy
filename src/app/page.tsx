@@ -6,7 +6,7 @@ import TimeRemaining, { TtlBar } from '@/components/TimeRemaining';
 import { detectTypeFromTitle, type ClipType } from '@/lib/detectType';
 import {
   IconClip, IconSearch, IconCopy, IconCheck,
-  IconTrash, IconBack,
+  IconTrash, IconBack, IconLink,
   IconEmptySearch, IconSelectClip
 } from '@/components/Icons';
 
@@ -366,17 +366,13 @@ export default function Home() {
           </button>
           <span className="detail-title">{selectedClip?.title || 'Item'}</span>
           {selectedClip && (
-            <>
-              <CopyButton content={selectedClip.content} className="btn-ghost" style={{ width: 38, height: 38, padding: 0, display: 'grid', placeItems: 'center' }} />
-              <button
-                className="btn-back"
-                onClick={() => { navigator.clipboard.writeText(window.location.origin + '/clip/' + selectedClip.id); showToast('Link copied!'); }}
-                aria-label="Copy link"
-                style={{ width: 38, height: 38, display: 'grid', placeItems: 'center' }}
-              >
-                <IconCopy />
-              </button>
-            </>
+            <button
+              className="btn-back"
+              onClick={() => { navigator.clipboard.writeText(window.location.origin + '/clip/' + selectedClip.id); showToast('Link copied!'); }}
+              aria-label="Copy link"
+            >
+              <IconLink />
+            </button>
           )}
         </div>
         <div id="overlay-body" style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
