@@ -3,10 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import CopyButton from '@/components/CopyButton';
 import TimeRemaining, { TtlBar } from '@/components/TimeRemaining';
-import { detectClipType, detectTypeFromTitle, type ClipType } from '@/lib/detectType';
+import { detectTypeFromTitle, type ClipType } from '@/lib/detectType';
 import {
-  IconClip, IconSearch, IconPlus, IconCopy, IconCheck,
-  IconTrash, IconBack, IconPaste, IconSettings,
+  IconClip, IconSearch, IconCopy, IconCheck,
+  IconTrash, IconBack,
   IconEmptySearch, IconSelectClip
 } from '@/components/Icons';
 
@@ -30,11 +30,6 @@ export default function Home() {
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
-  // Paste box state
-  const [pasteContent, setPasteContent] = useState('');
-  const [pasteTtl, setPasteTtl] = useState('30');
-  const [pasting, setPasting] = useState(false);
-  const pasteInputRef = useRef<HTMLTextAreaElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Toast
@@ -75,36 +70,7 @@ export default function Home() {
     }
   };
 
-  const handlePaste = async () => {
-    if (!pasteContent.trim()) return;
-    setPasting(true);
-    try {
-      const res = await fetch('/api/clips', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: pasteContent,
-          title: pasteContent.slice(0, 80).replace(/\n/g, ' '),
-          ttl: parseInt(pasteTtl) * 60,
-        }),
-      });
-      if (!res.ok) throw new Error('Failed');
-      setPasteContent('');
-      await fetchClips();
-      showToast('Saved!');
-    } catch {
-      showToast('Failed to save');
-    } finally {
-      setPasting(false);
-    }
-  };
 
-  const handlePasteKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      handlePaste();
-    }
-  };
 
   // Content type badge and preview helpers
   const getClipType = (clip: ClipItem): ClipType => detectTypeFromTitle(clip.title, clip.content);
@@ -185,7 +151,7 @@ export default function Home() {
           <span className="brand">
             <span className="brand-icon"><IconClip /></span>
             Coppy
-            <span className="brand-tag">self-destructing</span>
+  
           </span>
 
           <div className="search-wrap">
@@ -213,10 +179,7 @@ export default function Home() {
                 <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
               </svg>
             </button>
-            <button className="btn-primary" onClick={() => pasteInputRef.current?.focus()} title="Paste new content">
-              <IconPlus />
-              <span className="btn-label" style={{ display: 'inline' }}>Paste</span>
-            </button>
+
           </div>
         </div>
       </header>
@@ -247,37 +210,7 @@ export default function Home() {
             <span className="result-count">{filteredClips.length} items</span>
           </div>
 
-          {/* Paste box */}
-          <div className="paste-box">
-            <div className="paste-header">
-              <IconPaste />
-              Paste from clipboard
-            </div>
-            <textarea
-              ref={pasteInputRef}
-              className="paste-textarea"
-              value={pasteContent}
-              onChange={(e) => setPasteContent(e.target.value)}
-              onKeyDown={handlePasteKeyDown}
-              placeholder="Paste content here, or send via POST to /api/clips…"
-            />
-            <div className="paste-footer">
-              <select className="ttl-select" value={pasteTtl} onChange={(e) => setPasteTtl(e.target.value)}>
-                <option value="5">5 min</option>
-                <option value="30">30 min</option>
-                <option value="60">1 hour</option>
-                <option value="360">6 hours</option>
-                <option value="1440">24 hours</option>
-              </select>
-              <span className="paste-hint" style={{ fontSize: 12, color: 'var(--color-muted-2)' }}>
-                {pasteContent ? `${pasteContent.length} chars` : ''}
-              </span>
-              <button className="btn-primary" onClick={handlePaste} disabled={pasting || !pasteContent.trim()} style={{ marginLeft: 'auto' }}>
-                <IconPlus />
-                Save
-              </button>
-            </div>
-          </div>
+
 
           {/* Loading state */}
           {loading && (
@@ -301,7 +234,7 @@ export default function Home() {
             <div className="empty-state">
               <p style={{ fontSize: 48, marginBottom: 16 }}>📋</p>
               <h3>Your clipboard is empty</h3>
-              <p>Paste something above, or send a POST to /api/clips. Items auto-destruct after their TTL.</p>
+              <p>Send a POST to /api/clips to create one. Items auto-destruct after their TTL.</p>
             </div>
           )}
 
