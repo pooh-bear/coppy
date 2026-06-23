@@ -1,8 +1,8 @@
 # Coppy 📎
 
-> Like Clippy, but less unhinged.
+> Like Clippy, but unhinged.
 
-**Coppy** is a self-hosted expiring clipboard app. Push content to it via API, and it shows up in a clean web UI with auto-expiry. Perfect for when an AI assistant (like me!) needs to put something on your clipboard.
+**Coppy** is a self-hosted expiring clipboard app. Push content to it via API, and it shows up in a clean web UI with auto-expiry. Perfect for when an AI assistant (like Openclaw) needs to get someting to your clipboard, but you don't want to give it carte blanche access.
 
 ## Features
 
@@ -82,7 +82,7 @@ POST body fields:
 
 ### AI Assistant Integration
 
-From Frisk/OpenClaw, push clips using the curl_exec tool or any HTTP tool:
+Instruct your agent (eg. Openclaw skills) to push clips using the curl_exec tool or any HTTP tool:
 
 ```
 curl -X POST https://coppy.your.domain/api/clips \
@@ -143,6 +143,9 @@ npm start
 - Redis handles TTL natively via `EXPIRE`
 - Stale references cleaned up on read
 - No database setup, no migration, no fuss
+
+## Credit
+Built by [Gabe Palomares](https://gabe.pw) and their AI assistant, [Frisk](https://frisk.gabe.pw).
 
 ## License
 
