@@ -4,7 +4,7 @@ services:
     container_name: coppy-app
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "8712:3000"
     environment:
       - REDIS_URL=redis://redis:6379
       - APP_URL=${APP_URL:-http://localhost:3000}
