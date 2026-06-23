@@ -17,6 +17,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchClips = useCallback(async () => {
     try {
@@ -62,6 +63,14 @@ export default function Home() {
     return `${Math.floor(hours / 24)}d ago`;
   };
 
+  const filteredClips = searchQuery
+    ? clips.filter(
+        (c) =>
+          c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : clips;
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -75,8 +84,17 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="🔍 Search..."
+                className="w-36 sm:w-48 text-xs bg-coppy-card border border-coppy-border rounded-lg px-3 py-1.5 text-coppy-text placeholder:text-coppy-muted/40 focus:outline-none focus:border-coppy-primary/50 transition-colors"
+              />
+            </div>
             <span className="text-xs text-coppy-muted">
-              {clips.length} {clips.length === 1 ? 'item' : 'items'}
+              {filteredClips.length} / {clips.length}
             </span>
             <button
               onClick={fetchClips}
@@ -103,6 +121,14 @@ export default function Home() {
           </div>
         )}
 
+        {/* Search has results but clips are empty (shouldn't normally happen) */}
+        {!loading && !error && clips.length > 0 && filteredClips.length === 0 && (
+          <div className="flex items-center justify-center py-16 text-center">
+            <p className="text-sm text-coppy-muted">No clips match &ldquo;{searchQuery}&rdquo;</p>
+          </div>
+        )}
+
+        {/* No clips at all */}
         {!loading && !error && clips.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <span className="text-6xl mb-4">📋</span>
@@ -121,9 +147,10 @@ export default function Home() {
           </div>
         )}
 
-        {!loading && clips.length > 0 && (
+        {/* Clip list */}
+        {!loading && filteredClips.length > 0 && (
           <div className="space-y-3">
-            {clips.map((clip) => {
+            {filteredClips.map((clip) => {
               const isExpanded = expandedId === clip.id;
               const preview = isExpanded ? clip.content : clip.content.slice(0, 200);
 
