@@ -1,0 +1,17 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: coppy-redis-dev
+    ports:
+      - 16379:6379
+    restart: unless-stopped
+    volumes:
+      - coppy-redis-dev-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  coppy-redis-dev-data:

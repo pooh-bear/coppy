@@ -1,22 +1,17 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
-import CopyButton from '@/components/CopyButton';
-import TimeRemaining from '@/components/TimeRemaining';
-
-interface ClipItem {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: number;
-  expiresAt: number;
-}
+import { useState, useEffect, useMemo, use } from 'react';
+import Receipt from '@/components/Receipt';
+import Tagline from '@/components/Tagline';
+import type { Clip } from '@/lib/types';
+import { TYPES, copyText, toView } from '@/lib/clipView';
 
 export default function ClipPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [clip, setClip] = useState<ClipItem | null>(null);
+  const [raw, setRaw] = useState<Clip | null>(null);
   const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/clips/${id}`)
@@ -24,70 +19,69 @@ export default function ClipPage({ params }: { params: Promise<{ id: string }> }
         if (!res.ok) throw new Error('not found');
         return res.json();
       })
-      .then((data) => setClip(data.clip))
-      .catch(() => setNotFound(true))
+      .then((data) => setRaw(data.clip))
+      .catch(() => setRaw(null))
       .finally(() => setLoading(false));
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(tick);
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-coppy-bg">
-        <div className="animate-pulse text-coppy-muted">Loading clip...</div>
-      </div>
-    );
-  }
+  const clip = useMemo(() => (raw ? toView(raw) : null), [raw]);
+  const gone = !loading && (!clip || clip.expiresAt <= now);
 
-  if (notFound || !clip) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-coppy-bg">
-        <span className="text-6xl mb-4">💨</span>
-        <h1 className="text-xl font-bold mb-2">Clip expired or not found</h1>
-        <p className="text-sm text-coppy-muted mb-6">
-          This clip may have been deleted or its time ran out.
-        </p>
-        <a
-          href="/"
-          className="text-coppy-secondary hover:text-white transition-colors text-sm"
-        >
-          ← Back to Coppy
-        </a>
-      </div>
-    );
-  }
+  const flash = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2200);
+  };
 
   return (
-    <div className="min-h-screen bg-coppy-bg">
-      <header className="border-b border-coppy-border bg-coppy-card/50">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
-          <a href="/" className="text-coppy-secondary hover:text-white transition-colors text-sm">
-            ← Coppy
-          </a>
-          <span className="text-coppy-muted/30">|</span>
-          <h1 className="text-sm font-medium truncate">{clip.title}</h1>
+    <div className="app">
+      <header className="topbar">
+        <div className="topbar-side">
+          <a href="/" className="brand">coppy<span className="brand-cursor" /></a>
+          <Tagline />
+        </div>
+        <div className="topbar-side topbar-stats">
+          <a href="/">← all clips</a>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-6">
-        <div className="bg-coppy-card border border-coppy-border rounded-xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-coppy-border/50 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-coppy-secondary text-sm">📌</span>
-              <h2 className="text-sm font-medium">{clip.title}</h2>
-            </div>
-            <TimeRemaining expiresAt={clip.expiresAt} />
+      {loading ? (
+        <main className="status-line">warming up the printer…</main>
+      ) : gone || !clip ? (
+        <main className="empty-main">
+          <div className="receipt paper-tear empty-receipt">
+            <div className="receipt-top"><span>coppy / clip {id}</span><span>void</span></div>
+            <h1 className="empty-title">Already evaporated.</h1>
+            <p className="empty-copy">
+              This clip was shredded or its time ran out. Either way, it’s not coming back.
+            </p>
+            <p className="empty-fine"><a href="/">back to the counter</a></p>
           </div>
+        </main>
+      ) : (
+        <main className="standalone">
+          <div className="standalone-scroll">
+            <Receipt clip={clip} now={now} />
+          </div>
+          <div className="reader-actions standalone-actions">
+            <button
+              className="btn-primary"
+              onClick={() => { copyText(clip.url || clip.content); flash(clip.type === 'link' ? 'URL COPIED.' : 'COPIED. IT’S YOURS NOW.'); }}
+            >
+              {TYPES[clip.type].copy}
+            </button>
+            <button
+              className="btn-outline"
+              onClick={() => { copyText(window.location.href); flash('LINK COPIED. IT EXPIRES TOO.'); }}
+            >
+              Share link
+            </button>
+          </div>
+        </main>
+      )}
 
-          <div className="px-4 py-4">
-            <pre className="text-sm leading-relaxed whitespace-pre-wrap break-words font-sans text-coppy-text/90">
-              {clip.content}
-            </pre>
-          </div>
-
-          <div className="px-4 py-2.5 flex items-center gap-2 border-t border-coppy-border/50 bg-black/10">
-            <CopyButton content={clip.content} />
-          </div>
-        </div>
-      </main>
+      {toast && <div className="toast">{toast}</div>}
     </div>
   );
 }

@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
+import { Bricolage_Grotesque, Martian_Mono } from 'next/font/google';
 import './globals.css';
+
+const sans = Bricolage_Grotesque({ subsets: ['latin'], axes: ['opsz'], variable: '--font-sans' });
+const mono = Martian_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
   title: 'Coppy — Expiring Clipboard',
@@ -8,8 +12,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen">{children}</body>
+    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }
