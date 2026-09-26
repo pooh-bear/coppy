@@ -27,7 +27,7 @@ steps:
       OCR_STICKY_SUMMARY: "true"
       OCR_INCREMENTAL: "true"
       OCR_LLM_URL: "https://s-llm.gabeint.com/v1"
-      OCR_LLM_MODEL: "value-model"
+      OCR_LLM_MODEL: "code-review-model"
       OCR_GITHUB_REPO: "pooh-bear/coppy"
     secrets:
       OCR_LLM_TOKEN: COPPY_OCR_LLM_TOKEN
