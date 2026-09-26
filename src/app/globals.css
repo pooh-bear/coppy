@@ -340,6 +340,9 @@ a.brand:hover { color: var(--paper); text-decoration: none; }
   font: 600 11px var(--mono);
 }
 .curl-box pre { margin: 0; padding: 14px; overflow-x: auto; font: 11.5px/1.75 var(--mono); color: var(--code-fg); }
+.curl-box .secret { filter: blur(5px); transition: filter .2s ease; }
+/* Hover on desktop; focus-within covers keyboard users tabbing to the COPY button. */
+.curl-box:hover .secret, .curl-box:focus-within .secret { filter: none; }
 
 /* ═══ Main split ═══ */
 
