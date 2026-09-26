@@ -359,7 +359,7 @@ export default function Home({ apiToken }: { apiToken: string | null }) {
                 ? 'The clipboard API isn’t answering. Check that Redis is up; this page will keep trying every 15 seconds.'
                 : 'Clips arrive over the API and leave on their own schedule. Point your agent here and the next good thing it writes lands on this counter instead of drowning in chat history.'}
             </p>
-            <div className="curl-box" tabIndex={0}>
+            <div className="curl-box">
               <div className="curl-head">
                 <span>push your first clip</span>
                 <button onClick={() => { copyText(curlLines.join(' ')); showToast('COPIED. GO ON, SEND ONE.'); }}>COPY</button>
