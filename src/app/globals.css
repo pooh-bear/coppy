@@ -732,6 +732,15 @@ a.brand:hover { color: var(--paper); text-decoration: none; }
 .confirm-btns .keep:hover { border-color: var(--muted-2); }
 .confirm-btns .shred { border: 0; background: var(--red); color: oklch(97% 0.01 85); font-weight: 700; }
 .confirm-btns .shred:hover { background: oklch(62% 0.2 28); }
+.ttl-pop { flex-wrap: wrap; }
+.ttl-opts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ttl-opts button, .ttl-opts input { height: 32px; border-radius: 3px; font: 600 10.5px var(--mono); letter-spacing: .05em; white-space: nowrap; }
+.ttl-opts button { padding: 0 12px; }
+.ttl-opts .keep { border: 1px solid var(--line-4); background: transparent; color: oklch(85% 0.012 85); }
+.ttl-opts .keep:hover { border-color: var(--muted-2); }
+.ttl-opts .set { border: 0; background: var(--lime); color: var(--ink); font-weight: 700; }
+.ttl-opts .set:hover { background: var(--lime-hover); }
+.ttl-opts input { width: 64px; padding: 0 8px; border: 1px solid var(--line-4); background: transparent; color: var(--paper); }
 
 .toast {
   position: fixed;

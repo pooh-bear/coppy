@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import { setClip, listClips } from '@/lib/redis';
 import { validateApiToken } from '@/lib/auth';
-
-const DEFAULT_TTL = parseInt(process.env.COPPY_DEFAULT_TTL || '3600', 10);
-const MAX_TTL = parseInt(process.env.COPPY_MAX_TTL || '86400', 10);
+import { clampTtl, DEFAULT_TTL } from '@/lib/ttl';
 
 export async function POST(request: NextRequest) {
   // Check API token
@@ -22,10 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const clipTtl = Math.min(
-      Math.max(typeof ttl === 'number' ? ttl : DEFAULT_TTL, 60), // min 1 minute
-      MAX_TTL
-    );
+    const clipTtl = clampTtl(typeof ttl === 'number' ? ttl : DEFAULT_TTL);
     const clipTitle =
       typeof title === 'string' && title.trim().length > 0
         ? title.trim()

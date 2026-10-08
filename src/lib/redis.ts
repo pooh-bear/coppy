@@ -61,6 +61,18 @@ export async function getClip(id: string): Promise<Clip | null> {
   return JSON.parse(raw) as Clip;
 }
 
+/** Expire the clip `ttl` seconds from now. Returns the updated clip, or null if it's gone. */
+export async function setClipTtl(id: string, ttl: number): Promise<Clip | null> {
+  const r = getClient();
+  const key = `${CLIP_PREFIX}${id}`;
+  const raw = await r.get(key);
+  if (!raw) return null;
+  const clip = { ...(JSON.parse(raw) as Clip), expiresAt: Date.now() + ttl * 1000 };
+  // XX: only write if the key still exists, so a clip that expired mid-flight stays gone.
+  const ok = await r.set(key, JSON.stringify(clip), 'EX', ttl, 'XX');
+  return ok === 'OK' ? clip : null;
+}
+
 export async function deleteClip(id: string): Promise<boolean> {
   const r = getClient();
   const multi = r.multi();

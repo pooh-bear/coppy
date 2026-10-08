@@ -6,11 +6,14 @@ import Receipt from '@/components/Receipt';
 import Tagline from '@/components/Tagline';
 import type { Clip } from '@/lib/types';
 import {
-  FILTERS, SORTS, TYPES, URGENT_MS, copyText, fmtAgo, fmtLeft, fmtSize, hay, hitCount,
+  FILTERS, SORTS, TYPES, URGENT_MS, copyText, fmtAgo, fmtDuration, fmtLeft, fmtSize, hay, hitCount,
   previewText, snippet, sortClips, toView, typeOk, type ClipView, type FilterKey, type SortKey,
 } from '@/lib/clipView';
 
 interface Strip { d: number; r: string; o: number }
+
+/** Quick-pick lifespans in seconds; the ones above the server's max are dropped. */
+const TTL_PRESETS: [number, string][] = [[900, '15m'], [3600, '1h'], [21600, '6h'], [43200, '12h'], [86400, '24h']];
 
 const SORT_STORAGE_KEY = 'coppy:sort';
 
@@ -30,7 +33,7 @@ function parseQuery(raw: string, fallback: FilterKey): { q: string; t: FilterKey
   return { q: q.trim(), t };
 }
 
-export default function Home({ apiToken }: { apiToken: string | null }) {
+export default function Home({ apiToken, defaultTtl, maxTtl }: { apiToken: string | null; defaultTtl: number; maxTtl: number }) {
   const [raw, setRaw] = useState<Clip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -48,6 +51,8 @@ export default function Home({ apiToken }: { apiToken: string | null }) {
   const [toast, setToast] = useState<string | null>(null);
   const [confirmShred, setConfirmShred] = useState<string | null>(null);
   const [shredding, setShredding] = useState<string | null>(null);
+  const [ttlFor, setTtlFor] = useState<string | null>(null);
+  const [ttlMinutes, setTtlMinutes] = useState('');
 
   const palRef = useRef<HTMLInputElement>(null);
   const palListRef = useRef<HTMLDivElement>(null);
@@ -179,6 +184,7 @@ export default function Home({ apiToken }: { apiToken: string | null }) {
 
   const askShred = (id: string) => {
     if (shredding) return;
+    setTtlFor(null);
     clearTimeout(confirmTimer.current);
     clearTimeout(toastTimer.current);
     setToast(null);
@@ -225,6 +231,45 @@ export default function Home({ apiToken }: { apiToken: string | null }) {
     }, 1700);
   };
 
+  const openTtl = (id: string) => {
+    if (shredding) return;
+    cancelShred();
+    setTtlMinutes('');
+    setTtlFor(id);
+  };
+  const applyTtl = async (seconds: number) => {
+    const id = ttlFor;
+    if (!id) return;
+    let res: Response | undefined;
+    try {
+      res = await fetch(`/api/clips/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...(apiToken ? { Authorization: `Bearer ${apiToken}` } : {}) },
+        body: JSON.stringify({ ttl: seconds }),
+      });
+    } catch {
+      // network failure; res stays undefined
+    }
+    if (!res?.ok) {
+      const s = res?.status;
+      showToast(
+        s === 401 || s === 403 ? 'TIMER LOCKED. API TOKEN REQUIRED.'
+        : s === 404 ? 'TOO LATE. IT ALREADY LEFT.'
+        : 'TIMER JAMMED. TRY AGAIN.',
+      );
+      return;
+    }
+    const { clip } = (await res.json()) as { clip: Clip };
+    setRaw((prev) => prev.map((c) => (c.id === id ? clip : c)));
+    setTtlFor(null);
+    showToast(`TIMER RESET. ${fmtLeft(clip.expiresAt - Date.now())} LEFT.`);
+  };
+  const applyCustomTtl = () => {
+    const minutes = Number(ttlMinutes);
+    if (!(minutes > 0)) return showToast('ENTER MINUTES, E.G. 90.');
+    applyTtl(Math.round(minutes * 60));
+  };
+
   const onPalKey = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -263,6 +308,7 @@ export default function Home({ apiToken }: { apiToken: string | null }) {
     if (k === '/' && !pal && !/INPUT|TEXTAREA/.test(tag)) { e.preventDefault(); openPal(); return; }
     if (k === 'Escape') {
       if (pal) closePal();
+      else if (ttlFor) setTtlFor(null);
       else if (readerOpen) setReaderOpen(false);
     }
   };
@@ -278,7 +324,7 @@ export default function Home({ apiToken }: { apiToken: string | null }) {
     `curl -X POST ${origin}/api/clips`,
     ...(apiToken ? [`-H "Authorization: Bearer ${apiToken}"`] : []),
     `-H "Content-Type: application/json"`,
-    `-d '{"title":"Hello","content":"From my agent, with love"}'`,
+    `-d '{"ttl":${defaultTtl},"title":"Hello","content":"From my agent, with love"}'`,
   ];
   // Same text as curlLines, but the token is wrapped so CSS can blur it.
   const curlShown = curlLines.map((line, i) => {
@@ -366,7 +412,9 @@ export default function Home({ apiToken }: { apiToken: string | null }) {
               </div>
               <pre>{curlShown}</pre>
             </div>
-            <p className="empty-fine">default lifespan 1h · max 24h · no refunds</p>
+            <p className="empty-fine">
+              <b>&quot;ttl&quot;</b> = seconds to live · 60–{maxTtl} · omit it for {fmtDuration(defaultTtl * 1000).toLowerCase()} · no refunds
+            </p>
           </div>
         </main>
       ) : (
@@ -472,6 +520,7 @@ export default function Home({ apiToken }: { apiToken: string | null }) {
                     <button className="btn-primary" onClick={() => copyClip(selClip)}>{TYPES[selClip.type].copy}</button>
                     <button className="btn-outline" onClick={() => copyLink(selClip)}>Share link</button>
                     <span className="spacer" />
+                    <button className="btn-outline" onClick={() => openTtl(selClip.id)}>TTL</button>
                     <button className="btn-danger" onClick={() => askShred(selClip.id)}>Shred</button>
                   </div>
                 </>
@@ -565,6 +614,32 @@ export default function Home({ apiToken }: { apiToken: string | null }) {
           <div className="confirm-btns">
             <button className="keep" onClick={cancelShred}>KEEP</button>
             <button className="shred" onClick={doShred}>SHRED{isPhone ? '' : ' ↵'}</button>
+          </div>
+        </div>
+      )}
+
+      {ttlFor && (
+        <div className="confirm ttl-pop" role="dialog" aria-label="Set clip lifespan">
+          <div className="confirm-text">
+            <span>RESET TIMER No.{live.find((c) => c.id === ttlFor)?.no}</span>
+            <span>Expires this long from now.</span>
+          </div>
+          <div className="ttl-opts">
+            {TTL_PRESETS.filter(([s]) => s <= maxTtl).map(([s, label]) => (
+              <button key={s} className="keep" onClick={() => applyTtl(s)}>{label}</button>
+            ))}
+            <input
+              type="number"
+              min={1}
+              inputMode="decimal"
+              placeholder="min"
+              aria-label="Custom lifespan in minutes"
+              value={ttlMinutes}
+              onChange={(e) => setTtlMinutes(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyCustomTtl(); } }}
+            />
+            <button className="set" onClick={applyCustomTtl}>SET</button>
+            <button className="keep" onClick={() => setTtlFor(null)} aria-label="Cancel">×</button>
           </div>
         </div>
       )}

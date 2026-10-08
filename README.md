@@ -92,12 +92,16 @@ curl -X POST http://localhost:8712/api/clips \
 | `POST`   | `/api/clips`     | Create a clip          |
 | `GET`    | `/api/clips`     | List all active clips  |
 | `GET`    | `/api/clips/:id` | Get a specific clip    |
+| `PATCH`  | `/api/clips/:id` | Reset a clip's TTL     |
 | `DELETE` | `/api/clips/:id` | Delete a clip          |
 
 POST body fields:
 - `content` (required) — the text content
 - `title` (optional) — display title
 - `ttl` (optional) — time to live in seconds (60–86400, default 3600)
+
+PATCH body fields:
+- `ttl` (required) — new time to live in seconds, counted from now (clamped to 60–`COPPY_MAX_TTL`). The web UI exposes this as the **TTL** button next to **Shred**.
 
 ### AI Assistant Integration
 
@@ -121,7 +125,7 @@ Via environment variables:
 | `APP_URL`           | `http://localhost:8712`| Public URL (used in API responses) |
 | `COPPY_DEFAULT_TTL` | `3600`                 | Default clip expiry in seconds (1h) |
 | `COPPY_MAX_TTL`     | `86400`                | Maximum allowed TTL in seconds (24h) |
-| `COPPY_API_TOKEN`   | (empty)                | API token for write operations. If set, `POST`/`DELETE` require `Authorization: Bearer <token>`. Leave empty for open-access dev mode (live dangerously, but only on localhost). |
+| `COPPY_API_TOKEN`   | (empty)                | API token for write operations. If set, `POST`/`PATCH`/`DELETE` require `Authorization: Bearer <token>`. Leave empty for open-access dev mode (live dangerously, but only on localhost). |
 
 ## Deployment
 
