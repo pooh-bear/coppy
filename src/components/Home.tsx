@@ -13,7 +13,7 @@ import {
 interface Strip { d: number; r: string; o: number }
 
 /** Quick-pick lifespans in seconds; the ones above the server's max are dropped. */
-const TTL_PRESETS: [number, string][] = [[900, '15m'], [3600, '1h'], [21600, '6h'], [43200, '12h'], [86400, '24h']];
+const TTL_PRESETS: [number, string][] = [[900, '15m'], [3600, '1h'], [21600, '6h'], [43200, '12h'], [86400, '24h'], [604800, '7d']];
 
 const SORT_STORAGE_KEY = 'coppy:sort';
 

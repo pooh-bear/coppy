@@ -9,7 +9,7 @@ It looks like you're trying to copy something. Would you like help with that? (T
 ## Features
 
 - 📋 **REST API** — push clipboard items programmatically, no human required
-- ⏱️ **Auto-expiry** — items vanish after a configurable TTL (default: 1h, max: 24h). Clips are mortal. It builds character.
+- ⏱️ **Auto-expiry** — items vanish after a configurable TTL (default: 4h, max: 1 week). Clips are mortal. It builds character.
 - 🎨 **Clean UI** — view, copy, and manage clips in a web app that doesn't look like it was built in 2009
 - 🔗 **Shareable links** — every clip gets its own URL, like a tiny celebrity
 - 🔍 **Search** — filter clips by title or content live, as you type
@@ -80,7 +80,7 @@ curl -X POST http://localhost:8712/api/clips \
 {
   "id": "abc123def456",
   "url": "http://localhost:8712/clip/abc123def456",
-  "expiresIn": 3600,
+  "expiresIn": 14400,
   "message": "Clip created successfully"
 }
 ```
@@ -98,7 +98,7 @@ curl -X POST http://localhost:8712/api/clips \
 POST body fields:
 - `content` (required) — the text content
 - `title` (optional) — display title
-- `ttl` (optional) — time to live in seconds (60–86400, default 3600)
+- `ttl` (optional) — time to live in seconds (60–604800, default 14400)
 
 PATCH body fields:
 - `ttl` (required) — new time to live in seconds, counted from now (clamped to 60–`COPPY_MAX_TTL`). The web UI exposes this as the **TTL** button next to **Shred**.
@@ -123,8 +123,8 @@ Via environment variables:
 |---------------------|------------------------|-------------|
 | `REDIS_URL`         | `redis://redis:6379`   | Redis connection string |
 | `APP_URL`           | `http://localhost:8712`| Public URL (used in API responses) |
-| `COPPY_DEFAULT_TTL` | `3600`                 | Default clip expiry in seconds (1h) |
-| `COPPY_MAX_TTL`     | `86400`                | Maximum allowed TTL in seconds (24h) |
+| `COPPY_DEFAULT_TTL` | `14400`                | Default clip expiry in seconds (4h) |
+| `COPPY_MAX_TTL`     | `604800`               | Maximum allowed TTL in seconds (1 week) |
 | `COPPY_API_TOKEN`   | (empty)                | API token for write operations. If set, `POST`/`PATCH`/`DELETE` require `Authorization: Bearer <token>`. Leave empty for open-access dev mode (live dangerously, but only on localhost). |
 
 ## Deployment

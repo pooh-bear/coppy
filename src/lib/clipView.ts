@@ -144,7 +144,10 @@ export function fmtLeft(ms: number): string {
   const m = Math.floor(s / 60);
   if (s < 600) return m + ':' + String(s % 60).padStart(2, '0');
   if (m < 60) return m + 'm';
-  return Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ' + String(m % 60).padStart(2, '0') + 'm';
+  const d = Math.floor(h / 24);
+  return d + 'd ' + (h % 24) + 'h';
 }
 
 export function fmtAgo(ms: number): string {
@@ -157,8 +160,13 @@ export function fmtAgo(ms: number): string {
 export function fmtDuration(ms: number): string {
   const m = Math.round(ms / 60000);
   if (m < 60) return m + 'M';
-  const h = Math.floor(m / 60);
-  return m % 60 ? `${h}H ${m % 60}M` : `${h}H`;
+  if (m < 1440) {
+    const h = Math.floor(m / 60);
+    return m % 60 ? `${h}H ${m % 60}M` : `${h}H`;
+  }
+  const d = Math.floor(m / 1440);
+  const remH = Math.round((m % 1440) / 60);
+  return remH ? `${d}D ${remH}H` : `${d}D`;
 }
 
 export const fmtSize = (b: number) => (b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB');
